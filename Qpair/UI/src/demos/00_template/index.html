@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Appointment Scheduling System</title>
+    <link rel="stylesheet" type="text/css" href="../../css/main.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+    <script src="../../js/react.min.js"></script>
+    <script src="../../js/react-dom.min.js"></script>
+    <script src="../../js/browser.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+</head>
+<body background="../../images/bg2.jpg">
+
+
+<div id="example" class="modal-dialog modal-md"></div>
+
+<div id="example1" class="modal-dialog modal-md"></div>
+
+    <script type="text/babel">
+
+
+        var Comments = React.createClass({
+
+            getIntialState: function () {
+                return{
+                    date:'',
+                    time:'',
+                    doc_name:'',
+                    pat_name:'',
+                    notes:''
+                }
+            },
+            handleDateChange: function (evt) {
+            this.setState({ date: evt.target.value });
+            },
+            handleTimeChange: function (evt) {
+                this.setState({ time: evt.target.value });
+            },
+            handleDocNameChange: function (evt) {
+                this.setState({ doc_name: evt.target.value });
+            },
+            handlePatNameChange: function (evt) {
+                this.setState({pat_name: evt.target.value });
+            },
+            handleNotesChange: function (evt) {
+                this.setState({ notes: evt.target.value });
+            },
+            callAppointment: function(){
+
+                console.log(this.state.date);
+                console.log(this.state.time);
+                if(this.state.date==null || this.state.time==null){
+                    alert('You must change time and date value at least once');
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: "http://localhost:8080/newAppointment",
+                    data : JSON.stringify({
+                        "date" : this.state.date,
+                        "time" :this.state.time,
+                        "notes":this.state.notes,
+                        "doc_name" :this.state.doc_name,
+                        "patient_name" :this.state.pat_name
+                    }),
+                    contentType: "application/json",
+                    success: function(resultData) { location.reload();},
+                    error: function() { alert("Something went wrong"); }
+                });
+
+            },
+            render: function(){
+              return(
+                      <div className="modal-body">
+                          <h3>New Appointment</h3>
+                          <form role="form" name="createAppointmentForm">
+                              <div>
+                                  <label for="DocName"> Date:  </label>
+                                  <input type="date"  defaultValue="2012-10-01" className="form-control" onChange={this.handleDateChange}/>
+                              </div>
+                              <br/>
+                              <div>
+                              <label for="datetimepicker"> Time:  </label>
+                                  <input type="time" defaultValue="00:00:00" min="00:00:00" max="24:00:00" dataformatas="hh:mm:ss" className="form-control" id="datetimepicker" onChange={this.handleTimeChange}/>
+                              </div>
+
+                              <br/>
+                              <div>
+                                  <label for="DocName"> Doctor Name:  </label>
+                                  <input type="text" className="form-control" id="DocName" placeholder="Enter Doctor Name" onChange={this.handleDocNameChange} required/>
+                              </div>
+                              <br/>
+                              <div className="form-group">
+                                  <label for="patient"> Patient Name: </label>
+                                  <input type="email" className="form-control" id="patient" placeholder="Enter Patient Name" onChange={this.handlePatNameChange} required/>
+                              </div>
+                              <br/>
+                              <div className="form-group" cols="2">
+                                  <label for="notes"> Notes: </label>
+                                  <textarea id="notes" className="form-control" placeholder="Please enter any notes" onChange={this.handleNotesChange}></textarea>
+                              </div>
+                              <button type="button" className="btn btn-info btn-block" onClick={this.callAppointment}>Submit</button>
+                              <br/>
+                          </form>
+                      </div>
+              );
+            }
+        });
+
+
+        var MainBox  = React.createClass({
+            render:function(){
+                return(
+                        <App/>
+                );
+            }
+        });
+        var App = React.createClass({
+            //setting up initial state
+            getInitialState:function(){
+                return{
+                    data:[]
+                };
+            },
+            componentDidMount(){
+                this.getDataFromServer('http://localhost:8080/getAppointments');
+            },
+            //showResult Method
+            showResult: function(response) {
+
+                this.setState({
+                    data: response
+                });
+            },
+            //making ajax call to get data from server
+            getDataFromServer:function(URL){
+                $.ajax({
+                    type:"GET",
+                    dataType:"json",
+                    url:URL,
+                    success: function(response) {
+                        this.showResult(response);
+                    }.bind(this),
+                    error: function(xhr, status, err) {
+                        console.error(this.props.url, status, err.toString());
+                    }.bind(this)
+                });
+            },
+            render:function(){
+                return(
+                        <div>
+                            <h3>All Upcoming Appointments</h3>
+                            <Result result={this.state.data}/>
+                        </div>
+                );
+            }
+        });
+        var Result = React.createClass({
+            render:function(){
+                var result = this.props.result.map(function(result,index){
+                    return <ResultItem key={index} user={ result } />
+                });
+                return(
+                        <div className="row">
+                            <div className="col-md-12">
+                                <table className="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th className="col-md-4">Doctor Name</th>
+                                            <th >Patient Name</th>
+                                            <th>Date</th>
+                                            <th >Time</th>
+                                            <th>Notes</th>
+                                            <th ></th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {result}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                );
+            }
+        });
+        var ResultItem = React.createClass({
+
+            getInitialState: function () {
+              return{
+                  editing:false
+              };
+            },
+            edit: function(){
+                console.log("index" + this.props.user.appointment_id);
+                this.setState({editing:true});
+            },
+            save: function(){
+                var newDocName = this.refs.newDocName.value;
+                var newPatName = this.refs.newPatientName.value;
+                var newDate = this.refs.newDate.value;
+                var newTime = this.refs.newTime.value;
+                var newNotes = this.refs.newNotes.value;
+                console.log(newDocName+":"+newPatName+":"+newDate+":"+newTime+":"+newNotes);
+                console.log("index" + this.props.user.appointment_id);
+                $.ajax({
+                    type: 'POST',
+                    url: "http://localhost:8080/editAppointment",
+                    data : JSON.stringify({
+                        "appointment_id":this.props.user.appointment_id,
+                        "date" : newDate,
+                        "time" :newTime,
+                        "notes":newNotes,
+                        "doc_name" :newDocName,
+                        "patient_name" :newPatName
+                    }),
+                    contentType: "application/json",
+                    success: function(resultData) { location.reload();},
+                    error: function() { alert("Something went wrong"); }
+                });
+                this.setState({editing:false});
+            },
+            remove: function(){
+
+                $.ajax({
+                    type: 'POST',
+                    url: "http://localhost:8080/deleteAppointment",
+                    data : JSON.stringify({
+                        "appointment_id":this.props.user.appointment_id,
+                    }),
+                    contentType: "application/json",
+                    success: function(resultData) { location.reload();},
+                    error: function() { alert("Something went wrong"); }
+                });
+            },
+            renderForm:function(){
+                var camper = this.props.user;
+                return(
+                        <tr >
+                            <td><input type="text" ref="newDocName"  defaultValue={camper.doc_name}/></td>
+                            <td><input type="text" ref="newPatientName"  defaultValue={camper.patient_name}/></td>
+                            <td><input type="text" ref="newDate"   defaultValue={camper.date}/></td>
+                            <td><input type="text" ref="newTime"   defaultValue={camper.time}/></td>
+                            <td><input type="text" ref="newNotes"   defaultValue={camper.notes}/></td>
+                            <td><button type="button" className="btn btn-info btn-block" onClick={this.save}>Save</button></td>
+                        </tr>
+                );
+            },
+            renderNorm:function () {
+                var camper = this.props.user;
+                return(
+                        <tr >
+                            <td>{camper.doc_name}</td>
+                            <td>{camper.patient_name}</td>
+                            <td>{camper.date}</td>
+                            <td>{camper.time}</td>
+                            <td>{camper.notes}</td>
+                            <td><button type="button" className="btn btn-info btn-block" onClick={this.edit}>Edit</button></td>
+                            <td><button type="button" className="btn btn-info btn-block" onClick={this.remove}>Remove</button></td>
+                        </tr>
+                );
+            },
+            render:function(){
+                if(this.state.editing){
+                    return this.renderForm();
+                }else{
+                    return this.renderNorm();
+                }
+            }
+        });
+        ReactDOM.render(
+                <MainBox />,document.getElementById('example1'));
+
+        ReactDOM.render(<div class="modal-content">
+                                        <Comments/>
+                        </div>, document.getElementById('example'));
+
+    </script>
+
+<!--document.querySelector("#app")-->
+</body>
+</html>

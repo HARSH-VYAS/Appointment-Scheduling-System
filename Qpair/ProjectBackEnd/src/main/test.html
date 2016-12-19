@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <style>
+    marquee {
+   width: 1220px;
+   height: 120px;
+   padding: 10px;
+   border: 5px solid gray;
+   margin: 0;
+}
+div {
+overflow: auto;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+
+        $.post("http://localhost:8080/orgAdminSignUp",
+        {
+			"name" : "Microsoft",
+            "address" : "Seattle",
+            "admin_email" : "sanket@micro.com",
+            "password" : "admin"
+        },
+        function(data,status){
+            var output = "";
+            for(var i=0; i<data.length; i++){
+            output = output + 
+            "<p>"+  
+            " <div>" +
+            "<B>" + "email:  " + "</B>" + data[i].admin_email 
+            + "</br>" +  "</div>" 
+            + "</p>";
+            }
+            $("#transaction").html(output);
+        });
+        
+});
+</script>
+  </head>
+  <body>
+    <h1>Blockchain</h1>
+    <p>Transaction Feed</p>
+    
+    <marquee direction="up">
+    <div id="transaction">
+    </div>
+    </marquee>
+  </body>
+</html>

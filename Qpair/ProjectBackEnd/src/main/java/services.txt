@@ -1,0 +1,33 @@
+Service API	Description
+	
+createLevel	
+createLayer	
+createRole	
+createStatus	
+orgAdminSignUp	
+orgAdminLogin	
+createDepartment	
+userSignUp	
+userLogin	
+createRequestType	
+createWorkflow	
+addLevelIntoWorkflow	
+addLayerIntoWorkflow	
+doRequest	
+getNextWorkers	
+takeRequest	
+approveRequest	
+rejectRequest	
+	
+getAllDepartments	
+getAllOrganizations	
+getAllUsers	
+getAllUnassignedDepartments	
+updateEmail
+deleteEmail
+getAllRequestsOfUser - workflowid, name, description
+getStatsUserDashBoard
+getAllAssignedAndPendingRequests
+	
+	
+
